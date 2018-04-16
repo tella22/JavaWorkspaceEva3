@@ -1,103 +1,124 @@
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+
 public class Main {
-
 	public static void main(String[] args) {
+		Integer totalEscanyos;
+		Integer totalPartidos;
+		Integer porcentajeMin;
 
-		Integer totalVotos = 0;
-		final Integer totalEscaños = 5;
-		final Integer totalPartidos = 4;
-		Integer votos;
-		TreeMap<Integer, Partidos> treeVotos = new TreeMap<>(Collections.reverseOrder());
-		Integer contaEscanyos=0;
-		
-		Partidos pPartido = null;
-		String pNombre = null;
-		Integer pVotos = null;
-		Integer pEscanyos = null;
-		String partidosMostrar ="PARTIDOS\tVOTOS";
-		String escanyosMostrar ="PARTIDOS\tESCAÑOS";
-		
-		
-		
+		TreeMap<Integer, LinkedList<Partidos>> treeVotos = new TreeMap<>(Collections.reverseOrder());
+
+		totalPartidos = Leer.pedirEntero("Introduce el total de partidos");
+		totalEscanyos = Leer.pedirEntero("Introduce el total de escaños");
+		porcentajeMin = Leer.pedirEntero("Introduce el porcentaje minimo de votos");
+
 		Partidos vPartidos[] = new Partidos[totalPartidos];
-		
-		
-		totalVotos = calcularVotos(totalVotos, treeVotos, vPartidos);
-		
-		
-		
-		mostrarPartidosVotos(partidosMostrar, vPartidos);
-		
-		contaEscanyos = calcularEscaños(treeVotos, contaEscanyos);
-		
 
-		Leer.mostrarEnPantalla("");
-		Leer.mostrarEnPantalla(escanyosMostrar);
-		mostrarEscaños(vPartidos);	
+		calcularVotos(treeVotos, vPartidos, totalEscanyos, totalPartidos, porcentajeMin);
+		calcularEscanyos(treeVotos, totalEscanyos);
+		podar(treeVotos);
+
+		mostrarPartidosVotos(vPartidos);
+		mostrarEscanyos(vPartidos);
 		
 	}
 
-	private static void mostrarEscaños(Partidos[] vPartidos) {
-		String pNombre;
-		Integer pEscanyos;
-		for (Partidos partido : vPartidos) {
-			pNombre = partido.getNombre();
-			pEscanyos = partido.getEscaños();
-			
-			Leer.mostrarEnPantalla(pNombre + "\t" + pEscanyos);
+	private static void calcularVotos(TreeMap<Integer, LinkedList<Partidos>> treeVotos,
+		Partidos[] vPartidos, Integer totalEscanyos, Integer totalPartidos, Integer porcentajeMin) {
+		Integer totalVotos = 0;
+		Integer votos;
+		Partidos pPartido = null;
+		Integer totalVotosMin = null;
+		
+
+		for (Integer i = 0; i < totalPartidos; i++) {
+			votos = (int) Math.floor(Math.random() * (30000 - 50 + 1) + (50));
+			pPartido = new Partidos("Partido " + (i + 1), votos);
+			totalVotos += votos;
+
+			vPartidos[i] = pPartido;
+			for (Integer j = 1; j <= totalEscanyos; j++) {
+				if (treeVotos.get((votos / j)) == null) {
+					treeVotos.put((votos / j), new LinkedList<>());
+				}
+				treeVotos.get((votos / j)).add(pPartido);
+			}
+		}
+		
+		totalVotosMin = totalVotos * porcentajeMin / 100;
+		
+		for (Partidos partido: vPartidos) {
+			if (partido.getVotos() <= totalVotosMin) {
+				for (Integer key : treeVotos.keySet()) {
+					treeVotos.get(key).remove(partido);
+				}
+			}
 		}
 	}
 
-	private static Integer calcularEscaños(TreeMap<Integer, Partidos> treeVotos, Integer contaEscanyos) {
-		Partidos pPartido;
+	private static void calcularEscanyos(TreeMap<Integer, LinkedList<Partidos>> treeVotos, Integer totalEscanyos) {
+		LinkedList<Partidos> pPartido;
 		String pNombre;
+
+		Integer contaEscanyos = 0;
 		Integer pEscanyos;
-		for (Integer escanyo: treeVotos.keySet()) {
-			while(contaEscanyos < 5) {
-				pPartido = treeVotos.get(escanyo); 
-				pNombre = pPartido.getNombre();
-				pEscanyos = escanyo;
-				
-//				Leer.mostrarEnPantalla(pNombre + "\t" + pEscanyos);
-				contaEscanyos++;	
-				pPartido.addEscaños();
+
+		for (Integer votos : treeVotos.keySet()) {
+			if (contaEscanyos < totalEscanyos) {
+					for (Partidos partidos: treeVotos.get(votos)) {
+						pNombre = partidos.getNombre();
+						pEscanyos = votos;
+
+						contaEscanyos++;
+						partidos.addEscanyos();
+					}
+			}else {
 				break;
 			}
-			
+
 		}
-		return contaEscanyos;
 	}
 
-	private static void mostrarPartidosVotos(String partidosMostrar, Partidos[] vPartidos) {
+	private static void mostrarPartidosVotos(Partidos[] vPartidos) {
+		String partidosMostrar = "\nPARTIDOS\tVOTOS";
 		String pNombre;
 		Integer pVotos;
 		Leer.mostrarEnPantalla(partidosMostrar);
-		for (Partidos partido: vPartidos) {
+		for (Partidos partido : vPartidos) {
 			pNombre = partido.getNombre();
 			pVotos = partido.getVotos();
-			//pEscanyos = par 
+			// pEscanyos = par
 			Leer.mostrarEnPantalla(pNombre + "\t" + pVotos);
 		}
 	}
 
-	private static Integer calcularVotos(Integer totalVotos, TreeMap<Integer, Partidos> treeVotos,
-			Partidos[] vPartidos) {
-		Integer votos;
-		Partidos pPartido;
-		for (int i = 0; i < 4; i++) {
-			votos=(int)Math.floor(Math.random()*(30000-10000+1)+(10000));
-			totalVotos += votos;
-			pPartido = new Partidos("Partido "+(i+1), votos);
-			vPartidos[i] = pPartido;
-			treeVotos.put(votos, pPartido);
-			treeVotos.put(votos / 2, pPartido);
-			treeVotos.put(votos / 3, pPartido);
-			treeVotos.put(votos / 4, pPartido);
-			treeVotos.put(votos / 5, pPartido);
+	private static void mostrarEscanyos(Partidos[] vPartidos) {
+		String pNombre;
+		String escanyosMostrar = "\nPARTIDOS\tESCAÑOS";
+		Integer pEscanyos;
+		Leer.mostrarEnPantalla(escanyosMostrar);
+		for (Partidos partido : vPartidos) {
+			pNombre = partido.getNombre();
+			pEscanyos = partido.getEscanyos();
+
+			Leer.mostrarEnPantalla(pNombre + "\t" + pEscanyos);
 		}
-		return totalVotos;
+	}
+	
+	private static Integer podar(TreeMap<Integer, LinkedList<Partidos>> treeVotos) {
+		for (Integer key: new TreeMap<Integer, LinkedList<Partidos>>(treeVotos).keySet()) {
+			if (treeVotos.get(key).size() == 0) {
+				treeVotos.remove(key);
+				System.out.println("Arbol optimizado!");
+				
+			}
+		}
+		
+		return null;
 	}
 
 }

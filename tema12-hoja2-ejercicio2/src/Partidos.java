@@ -3,14 +3,14 @@ public class Partidos {
 
 	private String nombre;
 	private Integer votos;
-	private Integer escaños=0;
+	private Integer escanyos=0;
 	
-	public Integer getEscaños() {
-		return escaños;
+	public Integer getEscanyos() {
+		return escanyos;
 	}
 
-	public void addEscaños() {
-		this.escaños++;
+	public void addEscanyos() {
+		this.escanyos++;
 	}
 
 	public Partidos(String nombre, Integer votos) {
