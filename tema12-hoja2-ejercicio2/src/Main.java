@@ -8,7 +8,7 @@ public class Main {
 	public static void main(String[] args) {
 		Integer totalEscanyos;
 		Integer totalPartidos;
-		Integer porcentajeMin;
+		Integer porcentajeMin, totalVotos;
 
 		TreeMap<Integer, LinkedList<Partidos>> treeVotos = new TreeMap<>(Collections.reverseOrder());
 
@@ -18,16 +18,16 @@ public class Main {
 
 		Partidos vPartidos[] = new Partidos[totalPartidos];
 
-		calcularVotos(treeVotos, vPartidos, totalEscanyos, totalPartidos, porcentajeMin);
+		totalVotos = calcularVotos(treeVotos, vPartidos, totalEscanyos, totalPartidos, porcentajeMin);
 		calcularEscanyos(treeVotos, totalEscanyos);
-		podar(treeVotos);
+		Leer.mostrarEnPantalla("Arbol optimizado: " + podar(treeVotos) + "%");
 
-		mostrarPartidosVotos(vPartidos);
+		mostrarPartidosVotos(vPartidos, totalVotos);
 		mostrarEscanyos(vPartidos);
 		
 	}
 
-	private static void calcularVotos(TreeMap<Integer, LinkedList<Partidos>> treeVotos,
+	private static Integer calcularVotos(TreeMap<Integer, LinkedList<Partidos>> treeVotos,
 		Partidos[] vPartidos, Integer totalEscanyos, Integer totalPartidos, Integer porcentajeMin) {
 		Integer totalVotos = 0;
 		Integer votos;
@@ -58,6 +58,7 @@ public class Main {
 				}
 			}
 		}
+		return totalVotos;
 	}
 
 	private static void calcularEscanyos(TreeMap<Integer, LinkedList<Partidos>> treeVotos, Integer totalEscanyos) {
@@ -79,20 +80,20 @@ public class Main {
 			}else {
 				break;
 			}
-
 		}
 	}
 
-	private static void mostrarPartidosVotos(Partidos[] vPartidos) {
-		String partidosMostrar = "\nPARTIDOS\tVOTOS";
+	private static void mostrarPartidosVotos(Partidos[] vPartidos, Integer totalVotos) {
+		String partidosMostrar = "\nPARTIDOS\tVOTOS\t"+totalVotos;
 		String pNombre;
 		Integer pVotos;
+		Float porcentaje;
 		Leer.mostrarEnPantalla(partidosMostrar);
 		for (Partidos partido : vPartidos) {
 			pNombre = partido.getNombre();
 			pVotos = partido.getVotos();
-			// pEscanyos = par
-			Leer.mostrarEnPantalla(pNombre + "\t" + pVotos);
+			porcentaje = (float)(100 * pVotos) / (float) totalVotos;
+			Leer.mostrarEnPantalla(pNombre + "\t" + pVotos + "\t" + porcentaje + "%");
 		}
 	}
 
@@ -100,6 +101,7 @@ public class Main {
 		String pNombre;
 		String escanyosMostrar = "\nPARTIDOS\tESCAÑOS";
 		Integer pEscanyos;
+		Partidos winner = vPartidos[0];
 		Leer.mostrarEnPantalla(escanyosMostrar);
 		for (Partidos partido : vPartidos) {
 			pNombre = partido.getNombre();
@@ -107,18 +109,32 @@ public class Main {
 
 			Leer.mostrarEnPantalla(pNombre + "\t" + pEscanyos);
 		}
-	}
-	
-	private static Integer podar(TreeMap<Integer, LinkedList<Partidos>> treeVotos) {
-		for (Integer key: new TreeMap<Integer, LinkedList<Partidos>>(treeVotos).keySet()) {
-			if (treeVotos.get(key).size() == 0) {
-				treeVotos.remove(key);
-				System.out.println("Arbol optimizado!");
-				
+		
+		for (Partidos i: vPartidos) {
+			if (winner.getEscanyos() < i.getEscanyos()) {
+				winner = i;
 			}
 		}
 		
-		return null;
+		Leer.mostrarEnPantalla("\nPartido con más escaños: " + winner.getNombre());
+		
 	}
-
+	
+	private static Float podar(TreeMap<Integer, LinkedList<Partidos>> treeVotos) {
+		Float optimizacion;
+		Integer totalKeys = 0;
+		Integer ramasPodadas = 0;
+		for (Integer key: new TreeMap<Integer, LinkedList<Partidos>>(treeVotos).keySet()) {
+			totalKeys++;
+			if (treeVotos.get(key).size() == 0) {
+				treeVotos.remove(key);
+				ramasPodadas++;
+			}
+		}
+		
+		optimizacion = (float) (ramasPodadas * 100) / (float) totalKeys;
+		
+		return optimizacion;
+	}
+	
 }
